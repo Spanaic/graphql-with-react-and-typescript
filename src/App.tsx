@@ -1,12 +1,13 @@
 import React from 'react';
-import { Me } from './graphql'
+import { ME, GITHUB_REPOSITORIES } from './graphql'
 
 const App = () => {
 
   return (
     <>
       <div> hi, GraphQL </div>
-      <Me />
+      <ME />
+      <GITHUB_REPOSITORIES />
     </>
   );
 }

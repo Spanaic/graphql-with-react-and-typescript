@@ -1,4 +1,5 @@
 import { gql, useQuery } from '@apollo/client'
+import { LiteralType } from 'typescript'
 
 type UserData = {
   user: {
@@ -20,7 +21,7 @@ const GET_USER = gql`
   }
 `
 
-export const Me = () => {
+export const ME = () => {
   const { loading, error, data } = useQuery<UserData, Login>(GET_USER, { variables: { login: "Spanaic" } });
   return (
     <>
@@ -38,4 +39,92 @@ export const Me = () => {
   )
 }
 
+// searchクエリの引数の型
+type Search = {
+  first: number
+  after?: string,
+  last?: number,
+  before?: string,
+  query: string,
+  type: "REPOSITORY"
+}
 
+// 戻り値の型
+type RepositoryData = {
+  repositoryCount: number;
+  pageInfo: PageInfo;
+  edges: RepositoryEdges;
+}
+
+// 戻り値内の型
+type PageInfo = {
+  endCurosor: string;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  startCursor: string;
+}
+
+// 戻り値内の型
+type RepositoryEdges = {
+  cursor: string;
+  node: {
+    Repository: {
+      id: string;
+      name:string;
+      url: string;
+      stargazers: {
+        totalCount: number;
+      }
+      viewerHasStarred: boolean;
+    }
+  }
+}
+
+// クエリに渡す引数を宣言
+const VARIABLES = {
+  first: 5,
+  after: undefined,
+  last: undefined,
+  before: undefined,
+  query: "フロントエンドエンジニア",
+  type: "REPOSITORY" as "REPOSITORY",
+}
+
+// GraphQLのクエリ
+const SEARCH_REPOSITORY = gql`
+  query searchRepositories($first: Int, $after: String, $last: Int, $before: String, $query: String!) {
+    search(first: $first, after: $after, last: $last, before: $before, query: $query, type: REPOSITORY) {
+      repositoryCount
+      pageInfo {
+        endCursor
+        hasNextPage
+        hasPreviousPage
+        startCursor
+      }
+      edges {
+        cursor
+        node {
+          ... on Repository {
+            id
+            name
+            url
+            stargazers {
+              totalCount
+            }
+            viewerHasStarred
+          }
+        }
+      }
+    }
+  }
+`
+// クエリを呼び出す関数コンポーネント
+export const GITHUB_REPOSITORIES = () => {
+  const { data } = useQuery<RepositoryData, Search>(SEARCH_REPOSITORY, { variables: { first: VARIABLES.first, after: VARIABLES.after, last: VARIABLES.last, before: VARIABLES.before, query: VARIABLES.query, type: VARIABLES.type } })
+  console.log({ data })
+
+  return (
+    <>
+    </>
+  )
+}
