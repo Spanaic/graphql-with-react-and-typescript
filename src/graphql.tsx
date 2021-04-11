@@ -1,5 +1,4 @@
 import { gql, useQuery } from '@apollo/client'
-import { LiteralType } from 'typescript'
 
 type UserData = {
   user: {
@@ -40,7 +39,7 @@ export const ME = () => {
 }
 
 // searchクエリの引数の型
-type Search = {
+export type Search = {
   first: number
   after?: string,
   last?: number,
@@ -80,15 +79,19 @@ type RepositoryEdges = {
   }
 }
 
-// クエリに渡す引数を宣言
-const VARIABLES = {
-  first: 5,
-  after: undefined,
-  last: undefined,
-  before: undefined,
-  query: "フロントエンドエンジニア",
-  type: "REPOSITORY" as "REPOSITORY",
+type DefaultValueProps = {
+  DEFAULT_VALUE: Search;
 }
+
+// // クエリに渡す引数を宣言
+// const VARIABLES = {
+//   first: 5,
+//   after: undefined,
+//   last: undefined,
+//   before: undefined,
+//   query: "フロントエンドエンジニア",
+//   type: "REPOSITORY" as "REPOSITORY",
+// }
 
 // GraphQLのクエリ
 const SEARCH_REPOSITORY = gql`
@@ -119,8 +122,10 @@ const SEARCH_REPOSITORY = gql`
   }
 `
 // クエリを呼び出す関数コンポーネント
-export const GITHUB_REPOSITORIES = () => {
-  const { data } = useQuery<RepositoryData, Search>(SEARCH_REPOSITORY, { variables: { first: VARIABLES.first, after: VARIABLES.after, last: VARIABLES.last, before: VARIABLES.before, query: VARIABLES.query, type: VARIABLES.type } })
+export const GITHUB_REPOSITORIES = (DEFAULT_VALUE: DefaultValueProps) => {
+  console.log(DEFAULT_VALUE)
+  const { data } = useQuery<RepositoryData, Search>(SEARCH_REPOSITORY, { variables: { first: DEFAULT_VALUE.DEFAULT_VALUE.first, after: DEFAULT_VALUE.DEFAULT_VALUE.after, last: DEFAULT_VALUE.DEFAULT_VALUE.last, before: DEFAULT_VALUE.DEFAULT_VALUE.before, query: DEFAULT_VALUE.DEFAULT_VALUE.query, type: DEFAULT_VALUE.DEFAULT_VALUE.type } })
+  // const { data } = useQuery<RepositoryData, Search>(SEARCH_REPOSITORY, { variables: { first: VARIABLES.first, after: VARIABLES.after, last: VARIABLES.last, before: VARIABLES.before, query: VARIABLES.query, type: VARIABLES.type } })
   console.log({ data })
 
   return (
