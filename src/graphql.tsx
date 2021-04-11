@@ -52,9 +52,11 @@ export type Search = {
 
 // 戻り値の型
 type RepositoryData = {
-  repositoryCount: number;
-  pageInfo: PageInfo;
-  edges: RepositoryEdges;
+  search: {
+    repositoryCount: number;
+    pageInfo: PageInfo;
+    edges: RepositoryEdges;
+  }
 }
 
 // 戻り値内の型
@@ -115,8 +117,14 @@ export const GITHUB_REPOSITORIES = () => {
   const { data } = useQuery<RepositoryData, Search>(SEARCH_REPOSITORY, { variables: { first: searchState.first, after: searchState.after, last: searchState.last, before: searchState.before, query: searchState.query, type: searchState.type } })
   console.log({ data })
 
+  const search = data?.search
+  const repositoryCount = search?.repositoryCount
+  const repositoryUnit = repositoryCount === 1 ? 'Repository' : 'Repositories'
+  const title = `GitHub Repositories Search Results - ${repositoryCount} ${repositoryUnit}`
+
   return (
     <>
+      <h2>{title}</h2>
     </>
   )
 }
