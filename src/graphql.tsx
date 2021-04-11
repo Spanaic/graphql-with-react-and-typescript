@@ -55,7 +55,7 @@ type RepositoryData = {
   search: {
     repositoryCount: number;
     pageInfo: PageInfo;
-    edges: RepositoryEdges;
+    edges: RepositoryEdges[];
   }
 }
 
@@ -71,15 +71,13 @@ type PageInfo = {
 type RepositoryEdges = {
   cursor: string;
   node: {
-    Repository: {
-      id: string;
-      name:string;
-      url: string;
-      stargazers: {
-        totalCount: number;
-      }
-      viewerHasStarred: boolean;
+    id: string;
+    name:string;
+    url: string;
+    stargazers: {
+      totalCount: number;
     }
+    viewerHasStarred: boolean;
   }
 }
 
@@ -125,6 +123,17 @@ export const GITHUB_REPOSITORIES = () => {
   return (
     <>
       <h2>{title}</h2>
+      <ul>
+        {
+          search?.edges.map(edge => {
+            return (
+              <li key={edge.node.id}>
+                <a href={edge.node.url}>{edge.node.name}</a>
+              </li>
+            )
+          })
+        }
+      </ul>
     </>
   )
 }
