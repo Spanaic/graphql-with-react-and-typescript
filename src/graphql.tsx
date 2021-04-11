@@ -1,4 +1,6 @@
 import { gql, useQuery } from '@apollo/client'
+import { useContext } from 'react'
+import { SearchContext } from './contexts/AppContext'
 
 type UserData = {
   user: {
@@ -79,20 +81,6 @@ type RepositoryEdges = {
   }
 }
 
-type DefaultValueProps = {
-  DEFAULT_VALUE: Search;
-}
-
-// // クエリに渡す引数を宣言
-// const VARIABLES = {
-//   first: 5,
-//   after: undefined,
-//   last: undefined,
-//   before: undefined,
-//   query: "フロントエンドエンジニア",
-//   type: "REPOSITORY" as "REPOSITORY",
-// }
-
 // GraphQLのクエリ
 const SEARCH_REPOSITORY = gql`
   query searchRepositories($first: Int, $after: String, $last: Int, $before: String, $query: String!) {
@@ -122,10 +110,9 @@ const SEARCH_REPOSITORY = gql`
   }
 `
 // クエリを呼び出す関数コンポーネント
-export const GITHUB_REPOSITORIES = (DEFAULT_VALUE: DefaultValueProps) => {
-  console.log(DEFAULT_VALUE)
-  const { data } = useQuery<RepositoryData, Search>(SEARCH_REPOSITORY, { variables: { first: DEFAULT_VALUE.DEFAULT_VALUE.first, after: DEFAULT_VALUE.DEFAULT_VALUE.after, last: DEFAULT_VALUE.DEFAULT_VALUE.last, before: DEFAULT_VALUE.DEFAULT_VALUE.before, query: DEFAULT_VALUE.DEFAULT_VALUE.query, type: DEFAULT_VALUE.DEFAULT_VALUE.type } })
-  // const { data } = useQuery<RepositoryData, Search>(SEARCH_REPOSITORY, { variables: { first: VARIABLES.first, after: VARIABLES.after, last: VARIABLES.last, before: VARIABLES.before, query: VARIABLES.query, type: VARIABLES.type } })
+export const GITHUB_REPOSITORIES = () => {
+  const { searchState } = useContext(SearchContext)
+  const { data } = useQuery<RepositoryData, Search>(SEARCH_REPOSITORY, { variables: { first: searchState.first, after: searchState.after, last: searchState.last, before: searchState.before, query: searchState.query, type: searchState.type } })
   console.log({ data })
 
   return (
