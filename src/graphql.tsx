@@ -1,5 +1,7 @@
 import { gql, useQuery } from '@apollo/client'
+import { getNodeText } from '@testing-library/dom'
 import { useContext } from 'react'
+import { createArrowFunction, isArrowFunction } from 'typescript'
 import { SearchContext } from './contexts/AppContext'
 
 type UserData = {
@@ -42,13 +44,21 @@ export const ME = () => {
 
 // searchクエリの引数の型
 export type Search = {
-  first: number
-  after?: string,
-  last?: number,
-  before?: string,
-  query: string,
-  type: "REPOSITORY"
+  first: number;
+  after?: string;
+  last?: number;
+  before?: string;
+  query: string;
+  type: "REPOSITORY";
 }
+// export type Search = {
+//   first: number
+//   after?: string,
+//   last?: number,
+//   before?: string,
+//   query: string,
+//   type: "REPOSITORY"
+// }
 
 // 戻り値の型
 type RepositoryData = {
@@ -56,8 +66,15 @@ type RepositoryData = {
     repositoryCount: number;
     pageInfo: PageInfo;
     edges: RepositoryEdges[];
-  }
+  } | undefined;
 }
+// type RepositoryData = {
+//   search: {
+//     repositoryCount: number;
+//     pageInfo: PageInfo;
+//     edges: RepositoryEdges[];
+//   }
+// }
 
 // 戻り値内の型
 type PageInfo = {
@@ -111,14 +128,34 @@ const SEARCH_REPOSITORY = gql`
 `
 // クエリを呼び出す関数コンポーネント
 export const GITHUB_REPOSITORIES = () => {
-  const { searchState } = useContext(SearchContext)
-  const { data } = useQuery<RepositoryData, Search>(SEARCH_REPOSITORY, { variables: { first: searchState.first, after: searchState.after, last: searchState.last, before: searchState.before, query: searchState.query, type: searchState.type } })
-  console.log({ data })
+  const { searchState, setSearchState } = useContext(SearchContext)
+  const { data, error, loading, fetchMore } = useQuery<RepositoryData, Search>(SEARCH_REPOSITORY, { variables: { first: searchState.first, after: searchState.after, last: searchState.last, before: searchState.before, query: searchState.query, type: searchState.type } })
+  // console.log({ data })
 
+  // タイトル
   const search = data?.search
   const repositoryCount = search?.repositoryCount
   const repositoryUnit = repositoryCount === 1 ? 'Repository' : 'Repositories'
   const title = `GitHub Repositories Search Results - ${repositoryCount} ${repositoryUnit}`
+
+  // 次のページに遷移する処理
+  // https://caddi.tech/archives/2195#i-5
+  // FIXME: onClickが押された時にデフォルト値に戻ってしまっている気がする
+  const PER_PAGE = 5
+  const goNext = (data: any) => {
+    console.log('fetch', data)
+      setSearchState({
+        first: PER_PAGE,
+        after: data.search.pageInfo.endCurosor,
+        last: null,
+        before: null,
+      })
+      console.log({searchState})
+    // }
+  }
+
+  if (error) return <div>errors</div>
+  if (loading || !data) return <div>loading</div>
 
   return (
     <>
@@ -128,12 +165,29 @@ export const GITHUB_REPOSITORIES = () => {
           search?.edges.map(edge => {
             return (
               <li key={edge.node.id}>
-                <a href={edge.node.url}>{edge.node.name}</a>
+                <a href={edge.node.url} target="_blank" rel="noreferrer" >{edge.node.name}</a>
               </li>
             )
           })
         }
       </ul>
+      {
+        search?.pageInfo.hasNextPage === true ?
+          <button
+            onClick={async (e) => {
+              e.preventDefault()
+              const fetchMoreResult = await fetchMore({
+                variables: { after: data.search?.pageInfo.endCurosor },
+              })
+              console.log(fetchMoreResult)
+              goNext(fetchMoreResult.data)
+            }
+          }>
+            Next
+          </button>
+          :
+          null
+      }
     </>
   )
 }

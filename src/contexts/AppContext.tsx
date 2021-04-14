@@ -11,16 +11,26 @@ type SearchContextType = {
 // 定義した型のContextを生成
 export const SearchContext = createContext({} as SearchContextType)
 
+
+  const PER_PAGE = 5
   // クエリに渡す引数を宣言
     // hooksに渡すデフォルト値を設定
   const DEFAULT_VALUE = {
-    first: 5,
+    first: PER_PAGE,
     after: undefined,
     last: undefined,
     before: undefined,
     query: "aaa",
     type: "REPOSITORY" as "REPOSITORY",
   }
+  // const DEFAULT_VALUE = {
+  //   first: PER_PAGE,
+  //   after: undefined,
+  //   last: undefined,
+  //   before: undefined,
+  //   query: "aaa",
+  //   type: "REPOSITORY" as "REPOSITORY",
+  // }
 
 export const AppProvider = (props: { children: React.ReactNode }) => {
   // hooksの呼び出しはContextファイルに移動
